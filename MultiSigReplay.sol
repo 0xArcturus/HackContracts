@@ -10,6 +10,12 @@ import "github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.5/contrac
 
 //with these two systems a user can select a nonce for the transaction, if in the future he wants to do the exact same transaction he will add 1 to the nonce
 //and that tx will be not replayable
+
+//lastly we add address(this) to the hash inputs to check that the transaction is only valid for this address, and cannot be replicated in other contracts with the same bytecode.
+
+//the user can now execute getTxHash with the desired inputs. He will pass that hash to the other owner,
+// call an offchain method to sign the tx, and request the signed message from the other owner
+//introduce the tx inputs in the transfer function, and the signatures from the owners, and the tx will succesfully be called.
 contract MultiSigWallet {
     using ECDSA for bytes32;
 
@@ -36,7 +42,7 @@ contract MultiSigWallet {
     }
 
     function getTxHash(address to, uint amount, uint nonce) public view returns (bytes32) {
-        return keccak256(abi.encodePacked(to, amount, nonce));
+        return keccak256(abi.encodePacked(address(this),to, amount, nonce));
     }
 
     function checkSigs(
